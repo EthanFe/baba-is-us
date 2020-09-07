@@ -2,38 +2,20 @@ const { movementOffsets } = require("./data/movementOffsets")
 const { listOfNouns, listOfAdjectives } = require("./data/wordLists")
 
 class GameGrid {
-  constructor({width, height, entities}, levelWon) {
-    this.width = width;
-    this.height = height;
-    this.entities = entities
-    this.levelWon = levelWon
+  constructor(initialState) {
+    Object.assign(this, initialState)
   }
 
-  get latestState() {
-    return {
-      width: this.width,
-      height: this.height,
-      entities: this.entities
-    }
-  }
-
-  gameStateChanged() {
-    this.checkForWin()
-  }
-
-  checkForWin() {
+  get levelHasBeenWon() {
     const winObjectTypes = this.activeRules.filter(rule => rule.value === "win").map(rule => rule.subject)
     const winObjects = this.entitiesOfTypes(winObjectTypes)
     const players = [this.entitiesControlledByPlayer("you"), this.entitiesControlledByPlayer("me")]
     const won = players.every(controlledEntities => this.entityGroupsOverlap(controlledEntities, winObjects))
-    if (won) {
-      this.levelWon()
-    }
+    return won
   }
 
   addNewEntity(entity) {
     this.entities.push(entity)
-    this.gameStateChanged()
   }
 
   entityGroupsOverlap(entities1, entities2) {
@@ -70,7 +52,6 @@ class GameGrid {
       entity.y = newPosition.y
       entity.x = newPosition.x
     }
-    this.gameStateChanged()
   }
 
   applyMovement(position, offset) {

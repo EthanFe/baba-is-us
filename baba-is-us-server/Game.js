@@ -4,14 +4,19 @@ const { levels } = require("./data/levels")
 class Game {
     constructor() {
         this.level = 1
-        this.grid = new GameGrid(levels[this.level], () => this.levelWon())
+        this.loadGridForLevel(this.level)
         this.joinedPlayers = {you: null, me: null}
         this.movementCooldown = false;
         this.socket = null;
     }
 
+    loadGridForLevel(level) {
+        this.level = level
+        this.grid = new GameGrid(levels[this.level])
+    }
+
     get latestState() {
-      return {level: this.level, gridState: this.grid.latestState}
+      return {level: this.level, gridState: this.grid}
     }
 
     setSocketObject(socket) {
@@ -64,6 +69,7 @@ class Game {
             this.grid.moveCommandIssued(issuingPlayer, direction)
             this.movementCooldown = true
             this.setMovementCooldownTimer()
+            this.checkForLevelWin()
             this.sendStateToClients()
         }
         // players should be able to queue up move commands if movement is on cd
@@ -77,11 +83,11 @@ class Game {
         this.movementCooldown = false
     }
 
-    levelWon() {
-        this.level += 1
-        if (levels[this.level]) {
-            this.grid = new GameGrid(levels[this.level], () => this.levelWon())
-            this.sendStateToClients()
+    checkForLevelWin() {
+        if (this.grid.levelHasBeenWon) {
+            if (levels[this.level + 1]) { // this is jank error handling
+                this.loadGridForLevel(this.level + 1)
+            }
         }
     }
 }
