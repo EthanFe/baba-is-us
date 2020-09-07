@@ -1,0 +1,14 @@
+.grid-transition-wrapper {
+  transition: all .5s;
+  transform: scale(0);
+  display: flex;
+  justify-content: center;
+}
+
+.grid-transition-wrapper.minimized {
+  transform: scale(0);
+}
+
+.grid-transition-wrapper.maximized {
+  transform: scale(1);
+}
