@@ -7,7 +7,6 @@ class Game {
         this.initializeLevel(this.level)
         this.joinedPlayers = {you: null, me: null}
         this.movementCooldown = false;
-        this.socket = null;
 
         this.sendStateToClients = sendStateToClients
     }
@@ -19,10 +18,6 @@ class Game {
 
     get latestState() {
       return {level: this.level, gridState: this.grid}
-    }
-
-    setSocketObject(socket) {
-        this.socket = socket
     }
 
     playerJoined(id) {

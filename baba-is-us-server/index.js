@@ -37,7 +37,6 @@ function makeGame(socket, server) {
   const gameId = makeUniqueId(games)
   const game = new Game(() => updateClientsInRoom(gameId, server))
   games[gameId] = game
-  game.setSocketObject(server)
   socket.emit("newGameCreated", gameId)
 }
 
