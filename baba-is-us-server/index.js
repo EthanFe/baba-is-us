@@ -1,21 +1,15 @@
 const { Game } = require("./Game")
+const { makeUniqueId } = require("./utils")
 
-const game = new Game()
+const games = {}
 
 const startServer = () => {
   const port = process.env.PORT || '3000'
   const server = require('socket.io').listen(port);
 
-  game.setSocketObject(server)
-
   server.on('connection', (socket) => {
     console.log(`New client connected, creating socket connection with socket id ${socket.id}`)
-    const wasRoomToJoin = game.playerJoined(socket.id)
-    if (!wasRoomToJoin) {
-      // do something to make them a spectator or make a new game or something, idk i didn't actually think this through
-    }
-    sendInitialDataToConnectingClient(socket)
-    registerSocketEvents(socket)
+    registerGameEvents(socket, server)
   });
 
   console.log("Socket is ready.")
@@ -23,16 +17,55 @@ const startServer = () => {
   return server
 }
 
-function sendInitialDataToConnectingClient(socket) {
-  socket.emit("updateGameState", game.latestState)
+function registerGameEvents(socket, server) {
+  socket.on("makeGame", () => {
+    makeGame(socket, server)
+  })
+
+  socket.on("joinGame", (gameId) => {
+    joinGame(socket, server, gameId)
+  })
 }
 
-function registerSocketEvents(socket) {
+function registerMovementListener(socket, game) {
   socket.on("move", (direction) => {
-    if (game.isConnectedPlayer(socket.id)) {
-      game.moveCommandIssued(socket.id, direction)
-    }
+    game.moveCommandIssued(socket.id, direction)
   })
+}
+
+function makeGame(socket, server) {
+  const gameId = makeUniqueId(games)
+  const game = new Game(() => updateClientsInRoom(gameId, server))
+  games[gameId] = game
+  game.setSocketObject(server)
+  socket.emit("newGameCreated", gameId)
+}
+
+function joinGame(socket, server, gameId) {
+  console.log(`Client with id ${socket.id} trying to join game with id: ${gameId}`)
+
+  const game = games[gameId]
+  if (game === undefined) {
+    console.log("Failed to join game, no game with that id found")
+    socket.emit("gameJoinAttemptFailed")
+    return
+  }
+
+  const wasRoomToJoin = game.playerJoined(socket.id)
+  if (wasRoomToJoin) {
+    console.log("Successfully joined game")
+    socket.join(gameId)
+    registerMovementListener(socket, game)
+    updateClientsInRoom(gameId, server)
+  } else {
+    console.log("Failed to join game, already had two players connected")
+    socket.emit("gameJoinAttemptFailed")
+  }
+}
+
+function updateClientsInRoom(gameId, server) {
+  console.log("Updating clients in room for game: " + gameId)
+  server.to(gameId).emit("updateGameState", games[gameId].latestState)
 }
 
 const server = startServer()

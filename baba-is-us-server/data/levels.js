@@ -1,4 +1,4 @@
-const levels = {
+const levelLayouts = {
   1: {
     width: 9,
     height: 9,
@@ -49,4 +49,13 @@ const levels = {
   },
 }
 
-module.exports = { levels }
+const getLevelLayout = (levelNumber) => {
+  const layout = levelLayouts[levelNumber]
+  return {
+    width: layout.width,
+    height: layout.height,
+    entities: layout.entities.map(entity => ({...entity}))
+  }
+}
+
+module.exports = { getLevelLayout }

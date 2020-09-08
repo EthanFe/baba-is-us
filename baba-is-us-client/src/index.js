@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import { BrowserRouter as Router } from "react-router-dom";
 
 import io from 'socket.io-client';
 const serverUrl = "http://localhost:3000"
@@ -9,7 +10,9 @@ const socket = io.connect(serverUrl)
 
 ReactDOM.render(
   <React.StrictMode>
-    <App socket={socket}/>
+    <Router>
+      <App socket={socket}/>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

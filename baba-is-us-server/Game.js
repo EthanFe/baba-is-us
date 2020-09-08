@@ -1,18 +1,20 @@
 const { GameGrid } = require("./GameGrid")
-const { levels } = require("./data/levels")
+const { getLevelLayout } = require("./data/levels")
 
 class Game {
-    constructor() {
+    constructor(sendStateToClients) {
         this.level = 1
-        this.loadGridForLevel(this.level)
+        this.initializeLevel(this.level)
         this.joinedPlayers = {you: null, me: null}
         this.movementCooldown = false;
         this.socket = null;
+
+        this.sendStateToClients = sendStateToClients
     }
 
-    loadGridForLevel(level) {
+    initializeLevel(level) {
         this.level = level
-        this.grid = new GameGrid(levels[this.level])
+        this.grid = new GameGrid(getLevelLayout(this.level))
     }
 
     get latestState() {
@@ -53,10 +55,6 @@ class Game {
 
         return true
     }
-    
-    sendStateToClients() {
-        this.socket.emit("updateGameState", this.latestState)
-    }
 
     isConnectedPlayer(id) {
         return this.joinedPlayers.you === id ||
@@ -85,8 +83,8 @@ class Game {
 
     checkForLevelWin() {
         if (this.grid.levelHasBeenWon) {
-            if (levels[this.level + 1]) { // this is jank error handling
-                this.loadGridForLevel(this.level + 1)
+            if (getLevelLayout(this.level + 1)) { // this is jank error handling
+                this.initializeLevel(this.level + 1)
             }
         }
     }
