@@ -6,24 +6,25 @@ class Game {
         this.activeLevel = null
         this.levelsCompleted = {}
         this.levelSelectCursor = 0
-        this.joinedPlayers = {you: null, me: null}
-        this.resetPlayerReadiness()
+        this.players = {you: {id: null, ready: false}, me: {id: null, ready: false}}
 
         this.grid = null
-        // this.initializeLevel(this.level)
         this.movementCooldown = false;
+        this.levelStartTimer = null
 
         this.sendStateToClients = sendStateToClients
     }
 
     resetPlayerReadiness() {
-        this.playersReady = {you: false, me: false}
+        this.players.you.ready = false
+        this.players.me.ready = false
     }
 
-    initializeLevel(level) {
-        this.level = level
-        this.grid = new GameGrid(getLevelLayout(this.level))
-        // this.sendStateToClients()
+    launchLevel() {
+        this.activeLevel = this.levelSelectCursor
+        this.resetPlayerReadiness()
+        this.grid = new GameGrid(getLevelLayout(this.activeLevel))
+        this.sendStateToClients()
     }
 
     get latestState() {
@@ -35,17 +36,17 @@ class Game {
         availableLevels: levelLayouts,
         levelsCompleted: this.levelsCompleted,
         levelSelectCursor: this.levelSelectCursor,
-        playersReady: this.playersReady
+        playersReady: {you: this.players.you.ready, me: this.players.me.ready}
       }
     }
 
     playerJoined(id) {
-        if (!this.joinedPlayers.you) {
-            this.joinedPlayers.you = id
+        if (this.players.you.id === null) {
+            this.players.you.id = id
             this.sendStateToClients()
             return "you"
-        } else if (!this.joinedPlayers.me) {
-            this.joinedPlayers.me = id
+        } else if (this.players.me.id === null) {
+            this.players.me.id = id
             this.sendStateToClients()
             return "me"
         } else {
@@ -53,13 +54,12 @@ class Game {
         }
     }
 
-    isConnectedPlayer(id) {
-        return this.joinedPlayers.you === id ||
-               this.joinedPlayers.me === id
+    playerIdentityFromId(id) {
+        return this.players.you.id === id ? "you" : "me"
     }
 
     moveCommandIssued(id, direction) {
-        const issuingPlayer = this.joinedPlayers.you === id ? "you" : "me"
+        const issuingPlayer = this.playerIdentityFromId(id)
         if (this.activeLevel !== null) {
             if (!this.movementCooldown) {
                 this.grid.moveCommandIssued(issuingPlayer, direction)
@@ -88,18 +88,34 @@ class Game {
         }
     }
 
-    readyToggled(id, playerIsReady) {
-        const issuingPlayer = this.joinedPlayers.you === id ? "you" : "me"
-        this.playersReady[issuingPlayer] = playerIsReady
-        this.sendStateToClients()
-    }
-
     setMovementCooldownTimer() {
         setTimeout(() => this.movementCooldownEnded(), 1000 / 6)
     }
 
     movementCooldownEnded() {
         this.movementCooldown = false
+    }
+
+    readyToggled(id, playerIsReady) {
+        const issuingPlayer = this.playerIdentityFromId(id)
+        this.players[issuingPlayer].ready = playerIsReady
+        if (this.playersAreReady) {
+            this.beginLevelStartTimer()
+        } else if (this.levelStartTimer !== null) {
+            clearTimeout(this.levelStartTimer)
+            this.levelStartTimer = null
+        }
+        this.sendStateToClients()
+    }
+
+    get playersAreReady() {
+        return this.players.you.ready && this.players.me.ready
+    }
+
+    beginLevelStartTimer() {
+        this.levelStartTimer = setTimeout(() => {
+            this.launchLevel()
+        }, 2000)
     }
 
     checkForLevelWin() {

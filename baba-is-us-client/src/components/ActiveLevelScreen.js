@@ -1,10 +1,15 @@
-import React from 'react';
-import GridTransitionWrapper from './GridTransitionWrapper';
+import React, { useContext } from 'react';
+import Grid from './Grid';
+import GameStateContext from './GameStateContext';
 
-const ActiveLevelScreen = ({gameState}) => {
+const ActiveLevelScreen = () => {
+  const gameState = useContext(GameStateContext)
   return (
-    <GridTransitionWrapper gameState={gameState}/>
+    <Grid gameState={gameState.gridState}/>
   );
 }
 
 export default ActiveLevelScreen
+
+
+    // <GridTransitionWrapper gameState={gameState}/>

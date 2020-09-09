@@ -1,7 +1,11 @@
-import React from 'react';
-import GridTransitionWrapper from './GridTransitionWrapper';
+import React, { useContext } from 'react';
+import TransitionWrapper from './TransitionWrapper';
+import Grid from './Grid';
+import GameStateContext from './GameStateContext';
 
-const LevelSelectScreen = ({gameState}) => {
+const LevelSelectScreen = () => {
+  const gameState = useContext(GameStateContext)
+
   return (
     <div style={styles.listContainer}>
       <div style={styles.levelsList}>
@@ -15,25 +19,33 @@ const LevelSelectScreen = ({gameState}) => {
         ))}
       </div>
       <div style={styles.levelPreview}>
-          <GridTransitionWrapper
-            gameState={{
-              gridState: gameState.availableLevels[gameState.levelSelectCursor],
-              level: gameState.levelSelectCursor
-            }}
-            scale={0.3}
-            transitionTime={0.3}
-          />
+        <GridTransitionWrapper
+          levelNumber={gameState.levelSelectCursor}
+          gridState={gameState.availableLevels[gameState.levelSelectCursor]}
+        />
       </div>
     </div>
   )
 }
 
+const GridTransitionWrapper = ({levelNumber, gridState}) => {
+  return (
+    <TransitionWrapper diffData={levelNumber} scale={0.3} transitionTime={0.45} transitionInitially={true}>
+      <Grid gameState={gridState}/>
+    </TransitionWrapper>
+  );
+}
+
 const LevelRow = ({levelName, active, playersReady}) => {
-  console.log(playersReady)
+  const readyToLaunch = playersReady.you && playersReady.me && active
+  const className = (readyToLaunch ? "ready-level-pulse" : "") + (active ? " active-level-pulse" : "")
   return (
     <div style={styles.levelRow}>
       <ReadyIndicator imageName="baba" ready={active && playersReady.you} />
-      <div style={{...styles.level, ...(active ? styles.activeLevel : {}) }}>
+      <div
+        className={className}
+        style={{...styles.level, ...(active ? styles.activeLevel : {}), ...(readyToLaunch ? styles.readyLevel : {}) }}
+      >
         {levelName}
       </div>
       <ReadyIndicator imageName="keke" ready={active && playersReady.me}/>
@@ -42,7 +54,6 @@ const LevelRow = ({levelName, active, playersReady}) => {
 }
 
 const ReadyIndicator = ({imageName, ready}) => {
-  console.log(ready)
   return (
     <div className={ready ? "ready-indicator-pop-in" : ""} style={{...styles.readyIndicatorContainer, ...(!ready ? {visibility: "hidden"} : {})}}>
       <div className="ready-indicator-durdle" style={styles.readyIndicatorImageWrapper}>
@@ -86,15 +97,14 @@ const styles = {
   level: {
     flex: 1,
     margin: "5px",
-    // marginBottom: "5px",
     padding: "10px",
-    // width: "100%",
 
     borderWidth: "1px",
-    borderStyle: "dotted",
+    borderStyle: "solid",
     borderColor: "#130d3636",
     borderRadius: "5px",
     backgroundColor: "#8e44ad",
+    transition: "background-color 0.3s cubic-bezier(0.37, 0, 0.63, 1)",
 
     display: "flex",
     flexFlow: "column",
@@ -126,6 +136,10 @@ const styles = {
 
   activeLevel: {
     backgroundColor: "#C798DA",
+  },
+
+  readyLevel: {
+    backgroundColor: "#2ecc71",
   },
 
   levelsList: {
