@@ -1,10 +1,27 @@
-const levelLayouts = {
-  1: {
+const levelLayouts = [
+  {
+    name: "the first level",
     width: 9,
     height: 9,
-    entities: []
+    entities: [
+      {x: 4, y: 3, type: "baba"},
+      {x: 1, y: 3, type: "text", value: "baba"},
+      {x: 1, y: 4, type: "text", value: "is"},
+      {x: 1, y: 5, type: "text", value: "you"},
+
+      {x: 4, y: 5, type: "keke"},
+      {x: 7, y: 3, type: "text", value: "keke"},
+      {x: 7, y: 4, type: "text", value: "is"},
+      {x: 7, y: 5, type: "text", value: "me"},
+
+      {x: 4, y: 4, type: "flag"},
+      {x: 2, y: 1, type: "text", value: "flag"},
+      {x: 6, y: 1, type: "text", value: "is"},
+      {x: 5, y: 7, type: "text", value: "win"}
+    ]
   },
-  2: {
+  {
+    name: "tbh, i didn't think of level names",
     width: 11,
     height: 8,
     entities: [
@@ -35,7 +52,8 @@ const levelLayouts = {
       {x: 10, y: 7, type: "text", value: "stop"},
     ]
   },
-  3: {
+  {
+    name: "but here we are anyway.",
     width: 3,
     height: 4,
     entities: [
@@ -47,7 +65,7 @@ const levelLayouts = {
       {x: 2, y: 2, type: "text", value: "lol"},
     ]
   },
-}
+]
 
 const getLevelLayout = (levelNumber) => {
   const layout = levelLayouts[levelNumber]
@@ -58,4 +76,4 @@ const getLevelLayout = (levelNumber) => {
   }
 }
 
-module.exports = { getLevelLayout }
+module.exports = { getLevelLayout, levelLayouts }

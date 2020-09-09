@@ -3,7 +3,7 @@ import Grid from './Grid';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
-const GridTransitionWrapper = ({gameState}) => {
+const GridTransitionWrapper = ({gameState, scale, transitionTime}) => {
 
   const [gridState, setGridState] = useState(null)
   const [currentLevel, setCurrentLevel] = useState(null)
@@ -15,21 +15,23 @@ const GridTransitionWrapper = ({gameState}) => {
       setTransitionState("minimized")
       setTimeout(() => {
         setGridState(gameState.gridState)
-      }, 500)
+      }, 500 * transitionTime)
       setTimeout(() => {
         setTransitionState("maximized")
-      }, 1000)
+      }, 1000 * transitionTime)
     } else if (transitionState === "maximized") {
       setGridState(gameState.gridState)
     }
   })
 
   return (
-    <div className={"grid-transition-wrapper " + transitionState}>
-      {gridState !== null ? <Grid gameState={gridState}/> : null }
+    <div style={{transform: `scale(${scale})`}}>
+      <div className={"grid-transition-wrapper " + transitionState} style={{transition: `all ${transitionTime}s`}}>
+        {gridState !== null ? <Grid gameState={gridState}/> : null }
+      </div>
     </div>
   );
 
 }
 
-  export default GridTransitionWrapper
+export default GridTransitionWrapper

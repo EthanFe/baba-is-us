@@ -27,9 +27,12 @@ function registerGameEvents(socket, server) {
   })
 }
 
-function registerMovementListener(socket, game) {
+function registerInputListeners(socket, game) {
   socket.on("move", (direction) => {
     game.moveCommandIssued(socket.id, direction)
+  })
+  socket.on("ready", (playerIsReady) => {
+    game.readyToggled(socket.id, playerIsReady)
   })
 }
 
@@ -46,20 +49,21 @@ function joinGame(socket, server, gameId) {
   const game = games[gameId]
   if (game === undefined) {
     console.log("Failed to join game, no game with that id found")
-    socket.emit("gameJoinAttemptFailed")
+    socket.emit("gameJoinResult", null)
     return
   }
 
-  const wasRoomToJoin = game.playerJoined(socket.id)
-  if (wasRoomToJoin) {
+  const playerJoinedAs = game.playerJoined(socket.id)
+  if (playerJoinedAs !== null) {
     console.log("Successfully joined game")
     socket.join(gameId)
-    registerMovementListener(socket, game)
+    registerInputListeners(socket, game)
     updateClientsInRoom(gameId, server)
   } else {
     console.log("Failed to join game, already had two players connected")
-    socket.emit("gameJoinAttemptFailed")
   }
+
+  socket.emit("gameJoinResult", playerJoinedAs)
 }
 
 function updateClientsInRoom(gameId, server) {

@@ -1,54 +1,56 @@
 const { GameGrid } = require("./GameGrid")
-const { getLevelLayout } = require("./data/levels")
+const { getLevelLayout, levelLayouts } = require("./data/levels")
 
 class Game {
     constructor(sendStateToClients) {
-        this.level = 1
-        this.initializeLevel(this.level)
+        this.activeLevel = null
+        this.levelsCompleted = {}
+        this.levelSelectCursor = 0
         this.joinedPlayers = {you: null, me: null}
+        this.resetPlayerReadiness()
+
+        this.grid = null
+        // this.initializeLevel(this.level)
         this.movementCooldown = false;
 
         this.sendStateToClients = sendStateToClients
     }
 
+    resetPlayerReadiness() {
+        this.playersReady = {you: false, me: false}
+    }
+
     initializeLevel(level) {
         this.level = level
         this.grid = new GameGrid(getLevelLayout(this.level))
+        // this.sendStateToClients()
     }
 
     get latestState() {
-      return {level: this.level, gridState: this.grid}
+      return this.activeLevel !== null ? {
+        activeLevel: this.activeLevel,
+        gridState: this.grid
+      } : {
+        activeLevel: this.activeLevel,
+        availableLevels: levelLayouts,
+        levelsCompleted: this.levelsCompleted,
+        levelSelectCursor: this.levelSelectCursor,
+        playersReady: this.playersReady
+      }
     }
 
     playerJoined(id) {
         if (!this.joinedPlayers.you) {
             this.joinedPlayers.you = id
-            this.grid.addNewEntity({x: 4, y: 3, type: "baba"})
-            this.grid.addNewEntity({x: 1, y: 3, type: "text", value: "baba"})
-            this.grid.addNewEntity({x: 1, y: 4, type: "text", value: "is"})
-            this.grid.addNewEntity({x: 1, y: 5, type: "text", value: "you"})
-
             this.sendStateToClients()
+            return "you"
         } else if (!this.joinedPlayers.me) {
             this.joinedPlayers.me = id
-            this.grid.addNewEntity({x: 4, y: 5, type: "keke"})
-            this.grid.addNewEntity({x: 7, y: 3, type: "text", value: "keke"})
-            this.grid.addNewEntity({x: 7, y: 4, type: "text", value: "is"})
-            this.grid.addNewEntity({x: 7, y: 5, type: "text", value: "me"})
-
-            this.grid.addNewEntity({x: 4, y: 4, type: "flag"})
-            this.grid.addNewEntity({x: 2, y: 1, type: "text", value: "flag"})
-            this.grid.addNewEntity({x: 3, y: 1, type: "text", value: "is"})
-            this.grid.addNewEntity({x: 4, y: 1, type: "text", value: "win"})
-            // this.grid.addNewEntity({x: 6, y: 1, type: "text", value: "is"})
-            // this.grid.addNewEntity({x: 5, y: 7, type: "text", value: "win"})
-
             this.sendStateToClients()
+            return "me"
         } else {
-            return false
+            return null
         }
-
-        return true
     }
 
     isConnectedPlayer(id) {
@@ -58,14 +60,38 @@ class Game {
 
     moveCommandIssued(id, direction) {
         const issuingPlayer = this.joinedPlayers.you === id ? "you" : "me"
-        if (!this.movementCooldown) {
-            this.grid.moveCommandIssued(issuingPlayer, direction)
-            this.movementCooldown = true
-            this.setMovementCooldownTimer()
-            this.checkForLevelWin()
-            this.sendStateToClients()
+        if (this.activeLevel !== null) {
+            if (!this.movementCooldown) {
+                this.grid.moveCommandIssued(issuingPlayer, direction)
+                this.movementCooldown = true
+                this.setMovementCooldownTimer()
+                this.checkForLevelWin()
+                this.sendStateToClients()
+            }
+            // players should be able to queue up move commands if movement is on cd
+        } else {
+            if (direction === "up" || direction === "down") {
+                if (direction === "up") {
+                    this.levelSelectCursor--
+                    if (this.levelSelectCursor < 0) {
+                        this.levelSelectCursor = levelLayouts.length - 1
+                    }
+                } else if (direction === "down") {
+                    this.levelSelectCursor++
+                    if (this.levelSelectCursor > levelLayouts.length - 1) {
+                        this.levelSelectCursor = 0
+                    }
+                }
+                this.resetPlayerReadiness()
+                this.sendStateToClients()
+            }
         }
-        // players should be able to queue up move commands if movement is on cd
+    }
+
+    readyToggled(id, playerIsReady) {
+        const issuingPlayer = this.joinedPlayers.you === id ? "you" : "me"
+        this.playersReady[issuingPlayer] = playerIsReady
+        this.sendStateToClients()
     }
 
     setMovementCooldownTimer() {

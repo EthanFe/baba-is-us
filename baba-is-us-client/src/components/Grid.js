@@ -65,7 +65,7 @@ const Tile = ({entities}) => {
     }
   }
 
-  return entity && entity.type === "baba"
+  return entity && (entity.type === "baba" || entity.type === "keke")
           ? <img 
               style={style}
               src={require(`../images/${entity.type}.png`)}

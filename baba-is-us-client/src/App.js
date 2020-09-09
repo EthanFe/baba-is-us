@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { emptyGameState } from './consts.js'
 import { useHistory, Route, Switch, useRouteMatch, useParams } from "react-router-dom";
 
-import WelcomeScreen from './components/WelcomeScreen';
-import GameScreen from './components/GameScreen';
+import WelcomeView from './components/WelcomeView';
+import GameView from './components/GameView';
 import { useEffect } from 'react';
 
 const makeGame = (socket) => {
@@ -19,6 +19,7 @@ const joinGame = (socket, gameId) => {
 function App({socket}) {
   const [socketReady, setSocketReady] = useState(false)
   const [gameState, setGameState] = useState(emptyGameState)
+  const [playingAs, setPlayingAs] = useState(null)
   const history = useHistory();
   const match = useRouteMatch("/:gameId")
 
@@ -26,8 +27,12 @@ function App({socket}) {
     history.push(`/${gameId}`)
   }
 
-  const gameJoinAttemptFailed = () => {
-    history.push(`/`)
+  const gameJoinResult = (joinedAs) => {
+    if (joinedAs === null) {
+      history.push(`/`)
+    } else {
+      setPlayingAs(joinedAs)
+    }
   }
   
   const updateGameState = (newGameState) => {
@@ -37,7 +42,7 @@ function App({socket}) {
   socket.on('connect', () => setSocketReady(true));
   socket.on('updateGameState', updateGameState)
   socket.on('newGameCreated', newGameCreated)
-  socket.on('gameJoinAttemptFailed', gameJoinAttemptFailed)
+  socket.on('gameJoinResult', gameJoinResult)
 
   useEffect(() => {
     if (match !== null) {
@@ -48,8 +53,8 @@ function App({socket}) {
 
   return (
     <Switch>
-      <Route path="/:gameId" children={<GameScreen socketReady={socketReady} gameState={gameState} socket={socket} />} />
-      <Route path="/" children={<WelcomeScreen socketReady={socketReady} makeGame={() => makeGame(socket)} />} />
+      <Route path="/:gameId" children={<GameView socketReady={socketReady} gameState={gameState} socket={socket} playingAs={playingAs}/>} />
+      <Route path="/" children={<WelcomeView socketReady={socketReady} makeGame={() => makeGame(socket)} />} />
     </Switch>
   );
 }

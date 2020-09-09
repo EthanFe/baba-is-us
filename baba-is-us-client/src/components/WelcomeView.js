@@ -1,6 +1,6 @@
 import React from 'react';
 
-const WelcomeScreen = ({makeGame, socketReady}) => {
+const WelcomeView = ({makeGame, socketReady}) => {
   return (
     <div>
       <div>hi</div>
@@ -9,4 +9,4 @@ const WelcomeScreen = ({makeGame, socketReady}) => {
   )
 }
 
-export default WelcomeScreen;
+export default WelcomeView;
