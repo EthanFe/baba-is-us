@@ -1,11 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import TransitionWrapper from './TransitionWrapper';
 import Grid from './Grid';
-import GameStateContext from './GameStateContext';
 
-const LevelSelectScreen = () => {
-  const gameState = useContext(GameStateContext)
-
+const LevelSelectScreen = ({gameState}) => {
   return (
     <div style={styles.listContainer}>
       <div style={styles.levelsList}>

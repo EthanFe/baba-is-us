@@ -1,9 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Grid from './Grid';
-import GameStateContext from './GameStateContext';
 
-const ActiveLevelScreen = () => {
-  const gameState = useContext(GameStateContext)
+const ActiveLevelScreen = ({gameState}) => {
   return (
     <Grid gameState={gameState.gridState}/>
   );

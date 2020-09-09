@@ -3,7 +3,6 @@ import { movementKeys } from '../consts.js'
 import ActiveLevelScreen from './ActiveLevelScreen';
 import LevelSelectScreen from './LevelSelectScreen.js';
 import TransitionWrapper from './TransitionWrapper.js';
-import GameStateContext from './GameStateContext.js';
 
 const GameView = ({socketReady, gameState, socket, playingAs}) => {
   const keyPressed = (key) => {
@@ -22,11 +21,11 @@ const GameView = ({socketReady, gameState, socket, playingAs}) => {
   return (
     <div className="wrapper-thing" tabIndex={0} onKeyDown={({key}) => keyPressed(key)}>
         <TransitionWrapper diffData={gameState.activeLevel} scale={1} transitionTime={1} transitionInitially={false}>
-          <GameStateContext.Provider value={gameState}>
+
             {gameState.activeLevel !== null ?
-            <ActiveLevelScreen/> :
-            <LevelSelectScreen/>}
-          </GameStateContext.Provider>
+            <ActiveLevelScreen gameState={gameState}/> :
+            <LevelSelectScreen gameState={gameState}/>}
+
         </TransitionWrapper>
     </div>
   )
