@@ -1,12 +1,3 @@
-const emptyGameState = {
-  level: 0,
-  gridState: {
-    width: 3,
-    height: 3,
-    entities: []
-  }
-}
-
 const movementKeys = {
   "w": "up",
   "a": "left",
@@ -16,6 +7,5 @@ const movementKeys = {
 
 
 module.exports = {
-  emptyGameState,
   movementKeys
 }

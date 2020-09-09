@@ -1,8 +1,7 @@
 import React from 'react';
 import './App.css';
 import { useState } from 'react';
-import { emptyGameState } from './consts.js'
-import { useHistory, Route, Switch, useRouteMatch, useParams } from "react-router-dom";
+import { useHistory, Route, Switch, useRouteMatch } from "react-router-dom";
 
 import WelcomeView from './components/WelcomeView';
 import GameView from './components/GameView';
@@ -18,7 +17,7 @@ const joinGame = (socket, gameId) => {
 
 function App({socket}) {
   const [socketReady, setSocketReady] = useState(false)
-  const [gameState, setGameState] = useState(emptyGameState)
+  const [gameState, setGameState] = useState(null)
   const [playingAs, setPlayingAs] = useState(null)
   const history = useHistory();
   const match = useRouteMatch("/:gameId")

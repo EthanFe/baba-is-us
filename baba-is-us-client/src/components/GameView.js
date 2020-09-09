@@ -18,15 +18,17 @@ const GameView = ({socketReady, gameState, socket, playingAs}) => {
     return <div>connecting...</div>
   }
 
+  if (gameState === null) {
+    return null
+  }
+
   return (
     <div className="wrapper-thing" tabIndex={0} onKeyDown={({key}) => keyPressed(key)}>
-        <TransitionWrapper diffData={gameState.activeLevel} scale={1} transitionTime={1} transitionInitially={false}>
-
-            {gameState.activeLevel !== null ?
-            <ActiveLevelScreen gameState={gameState}/> :
-            <LevelSelectScreen gameState={gameState}/>}
-
-        </TransitionWrapper>
+      <TransitionWrapper diffData={gameState.activeLevel} scale={1} transitionTime={1} transitionInitially={false}>
+        {gameState.activeLevel !== null ?
+        <ActiveLevelScreen gameState={gameState}/> :
+        <LevelSelectScreen gameState={gameState}/>}
+      </TransitionWrapper>
     </div>
   )
 }
