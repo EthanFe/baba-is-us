@@ -33,8 +33,7 @@ class Game {
         gridState: this.grid
       } : {
         activeLevel: this.activeLevel,
-        availableLevels: levelLayouts,
-        levelsCompleted: this.levelsCompleted,
+        availableLevels: levelLayouts.map((level, levelIndex) => ({...level, completed: !!this.levelsCompleted[levelIndex]})),
         levelSelectCursor: this.levelSelectCursor,
         playersReady: {you: this.players.you.ready, me: this.players.me.ready}
       }
@@ -120,10 +119,14 @@ class Game {
 
     checkForLevelWin() {
         if (this.grid.levelHasBeenWon) {
-            if (getLevelLayout(this.level + 1)) { // this is jank error handling
-                this.initializeLevel(this.level + 1)
-            }
+            this.levelsCompleted[this.activeLevel] = true
+            this.exitLevel()
         }
+    }
+
+    exitLevel() {
+        this.activeLevel = null
+        this.grid = null
     }
 }
 

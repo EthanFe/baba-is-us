@@ -1,6 +1,7 @@
 import React from 'react';
 import TransitionWrapper from './TransitionWrapper';
 import Grid from './Grid';
+import { combineStyles } from '../utils';
 
 const LevelSelectScreen = ({gameState}) => {
   return (
@@ -9,7 +10,7 @@ const LevelSelectScreen = ({gameState}) => {
         {gameState.availableLevels.map((level, levelIndex) => (
           <LevelRow
             key={levelIndex}
-            levelName={level.name}
+            level={level}
             active={levelIndex === gameState.levelSelectCursor}
             playersReady={gameState.playersReady}
           />
@@ -25,15 +26,7 @@ const LevelSelectScreen = ({gameState}) => {
   )
 }
 
-const GridTransitionWrapper = ({levelNumber, gridState}) => {
-  return (
-    <TransitionWrapper diffData={levelNumber} scale={0.3} transitionTime={0.45} transitionInitially={true}>
-      <Grid gameState={gridState}/>
-    </TransitionWrapper>
-  );
-}
-
-const LevelRow = ({levelName, active, playersReady}) => {
+const LevelRow = ({level, active, playersReady}) => {
   const readyToLaunch = playersReady.you && playersReady.me && active
   const className = (readyToLaunch ? "ready-level-pulse" : "") + (active ? " active-level-pulse" : "")
   return (
@@ -41,9 +34,14 @@ const LevelRow = ({levelName, active, playersReady}) => {
       <ReadyIndicator imageName="baba" ready={active && playersReady.you} />
       <div
         className={className}
-        style={{...styles.level, ...(active ? styles.activeLevel : {}), ...(readyToLaunch ? styles.readyLevel : {}) }}
+        style={combineStyles([
+          styles.level,
+          {if: active, thenUse: styles.activeLevel},
+          {if: readyToLaunch, thenUse: styles.readyLevel},
+          {if: level.completed, thenUse: styles.completedLevel}
+        ])}
       >
-        {levelName}
+        {level.name}
       </div>
       <ReadyIndicator imageName="keke" ready={active && playersReady.me}/>
     </div>
@@ -52,7 +50,10 @@ const LevelRow = ({levelName, active, playersReady}) => {
 
 const ReadyIndicator = ({imageName, ready}) => {
   return (
-    <div className={ready ? "ready-indicator-pop-in" : ""} style={{...styles.readyIndicatorContainer, ...(!ready ? {visibility: "hidden"} : {})}}>
+    <div className={ready ? "ready-indicator-pop-in" : ""} style={combineStyles([
+        styles.readyIndicatorContainer,
+        {if: !ready, thenUse: {visibility: "hidden"} }
+      ])}>
       <div className="ready-indicator-durdle" style={styles.readyIndicatorImageWrapper}>
         <img 
           style={styles.readyIndicatorImage}
@@ -63,6 +64,14 @@ const ReadyIndicator = ({imageName, ready}) => {
       <div style={styles.readyIndicatorText}>ready!</div>
     </div>
   )
+}
+
+const GridTransitionWrapper = ({levelNumber, gridState}) => {
+  return (
+    <TransitionWrapper diffData={levelNumber} scale={0.3} transitionTime={0.45} transitionInitially={true}>
+      <Grid gameState={gridState}/>
+    </TransitionWrapper>
+  );
 }
 
 const styles = {
@@ -137,6 +146,12 @@ const styles = {
 
   readyLevel: {
     backgroundColor: "#2ecc71",
+  },
+
+  completedLevel: {
+    borderColor: "#f1c40f",
+    borderWidth: "3px",
+    borderRadius: "3px",
   },
 
   levelsList: {
